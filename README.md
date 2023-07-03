@@ -1,4 +1,3 @@
-# faciltur (faciltur)
 
 A Quasar Project
 
