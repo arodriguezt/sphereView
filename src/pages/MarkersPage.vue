@@ -1,64 +1,30 @@
 <template>
   <div>
-    <div id="viewer"></div>
-    <q-dialog
-      v-model="showNewMarkerDialog"
-      style=""
-      persistent
-      full-width
-      class="quantityDialog"
-    >
-      <div class="divDialog">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6 nomProducteDiv">Nuevo marcador</div>
-          </q-card-section>
-
-          <q-card-section class="q-pt-none quantityPriceInputs">
-            <q-input
-              ref="inputQuantityRef"
-              v-model="idMarker"
-              type="text"
-              color="warning"
-              dense
-              autofocus
-            ></q-input>
-            <q-file
-              v-model="selectedImage"
-              label="Pick images"
-              filled
-              counter
-              style="max-width: 300px"
-              @input="onFileSelected"
-            />
-          </q-card-section>
-
-          <q-card-actions align="left" class="text-primary">
-            <q-btn
-              v-close-popup
-              flat
-              class="cardActionButtonCancel"
-              label="Cancelar"
-            ></q-btn>
-            <q-btn
-              v-close-popup
-              flat
-              class="cardActionButtonConfirm"
-              label="Aceptar"
-              @click="addMarker(idMarker)"
-            ></q-btn>
-          </q-card-actions>
-        </q-card>
-      </div>
-    </q-dialog>
+    <q-list class="alphabetList">
+      <div v-for="image in markers" :key="image"></div>
+      <q-item
+        v-for="marker in image"
+        :key="marker.id"
+        v-ripple
+        class="q-pl-lg q-pr-lg"
+        clickable
+        @click="emitLetterClicked(letter)"
+        @touchstart="startTouch()"
+        @touchend="endTouch()"
+        @touchmove="moveTouch"
+      >
+        <q-item-section class="letterClass">{{ marker.id }}</q-item-section>
+        <q-img
+          :src="marker.image"
+          spinner-color="white"
+          style="height: 140px; max-width: 150px"
+        />
+      </q-item>
+    </q-list>
   </div>
 </template>
 
 <script>
-import { Viewer } from "@photo-sphere-viewer/core";
-import { MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
-import { onMounted, ref, reactive } from "vue";
-
 export default {
   name: "IndexPage",
   //https://www.freepik.com/premium-photo/minsk-belarus-april-2019-full-seamless-hdri-panorama-360-angle-guestroom-with-sofa-tv-apartments-mansard-floor-vacation-house-equirectangular-spherical-projectionvr-content_28861885.htm#from_view=detail_alsolike
@@ -342,121 +308,8 @@ export default {
       ],
     };
 
-    const idMarker = ref();
-    const selectedImage = ref();
-    const markerImageURL = ref();
-    const actualMarker = ref("circle4");
-
-    const markerPosition = reactive({ yaw: 0, pitch: 0 });
-    const showNewMarkerDialog = ref(false);
-    let viewer; // Variable per guardar el viewer
-
-    // function getFilteredMarkers(markerId) {
-    //   console.log(markerId);
-    //   return markers.filter((marker) => marker.id !== markerId);
-    // }
-
-    function createMarker(id) {
-      return {
-        id: id,
-        position: { yaw: markerPosition.yaw, pitch: markerPosition.pitch },
-        image: markerImageURL.value,
-        size: {
-          width: 187.5,
-          height: 75,
-        },
-        anchor: "bottom center",
-        tooltip: "Generated pin on double click",
-        data: {
-          generated: true,
-        },
-        className: "imageMarker",
-      };
-    }
-
-    function addMarker(id) {
-      console.log(id);
-      viewer.getPlugin(MarkersPlugin).addMarker(createMarker(id));
-      markers[actualMarker.value].push(createMarker(id));
-      console.log(markers);
-    }
-
-    function onFileSelected(event) {
-      const file = event.target.files[0];
-      markerImageURL.value = URL.createObjectURL(file);
-    }
-
-    onMounted(() => {
-      viewer = new Viewer({
-        container: "viewer",
-        panorama: baseUrl + "sphere.jpg",
-        loadingImg: baseUrl + "loader.gif",
-        mousewheelCtrlKey: true,
-        plugins: [
-          [
-            MarkersPlugin,
-            {
-              markers: markers[actualMarker.value],
-            },
-          ],
-        ],
-      });
-
-      viewer.getPlugin(MarkersPlugin).addEventListener("select-marker", (e) => {
-        // Recórrer la llista de marcadors
-        for (let marker of markers[actualMarker.value]) {
-          console.log(idMarker, marker.id);
-          // Comprovar si l'identificador del marcador seleccionat coincideix amb el marcador actual
-          if (e.marker.config.id === marker.id) {
-            actualMarker.value = marker.id;
-            // Actualitzar el panorama amb la imatge del marcador
-            viewer.setPanorama(marker.image, {
-              caption: marker.tooltip,
-            });
-            // Actualitzar la llista de marcadors per al nou panorama
-            viewer.getPlugin(MarkersPlugin).setMarkers(markers[marker.id]);
-            break;
-          }
-        }
-      });
-
-      viewer
-        .getPlugin(MarkersPlugin)
-        .addEventListener("marker-visibility", ({ marker, visible }) => {
-          console.log(marker.config.id);
-          const markerElement = document.getElementById(
-            "psv-marker-" + marker.config.id
-          );
-          console.log(markerElement);
-
-          if (visible) {
-            // Aplica la clase pulsating-marker cuando el marcador es visible
-            markerElement.classList.add("pulsating-marker");
-          } else {
-            // Quita la clase pulsating-marker cuando el marcador se oculta
-            markerElement.classList.remove("pulsating-marker");
-          }
-
-          console.log(
-            `Marker ${marker.id} is ${visible ? "visible" : "not visible"}`
-          );
-        });
-
-      viewer.addEventListener("dblclick", ({ data }) => {
-        showNewMarkerDialog.value = true;
-        markerPosition.yaw = data.yaw;
-        markerPosition.pitch = data.pitch;
-      });
-    });
-
     return {
-      showNewMarkerDialog,
-      idMarker,
-      markerImageURL,
-      selectedImage,
-
-      addMarker,
-      onFileSelected,
+      markers,
     };
   },
 };
