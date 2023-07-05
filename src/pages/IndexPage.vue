@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { Viewer} from "@photo-sphere-viewer/core";
+import { Viewer } from "@photo-sphere-viewer/core";
 import { MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
 import { onMounted } from "vue";
 
@@ -13,41 +13,38 @@ export default {
     const baseUrl = "https://photo-sphere-viewer-data.netlify.app/assets/";
     const img1 =
       "https://st3.depositphotos.com/11388938/17134/i/450/depositphotos_171340518-stock-photo-3d-illustration-spherical-360-degrees.jpg";
-    
+
     let viewer; // Variable per guardar el viewer
     let markers = [
       {
-        id: 'circle',
+        id: "circle",
         circle: 20,
-        position: {yaw: 4.7, pitch: 0.5},
-        tooltip: 'A circle marker',
-        anchor: 'center center',
-        style:{
-          backgroundColor:red
-        }
+        position: { yaw: 4.7, pitch: 0.5 },
+        tooltip: "A circle marker",
+        anchor: "center center",
       },
       {
-        id: 'circle1',
+        id: "circle1",
         circle: 20,
         //yaw eix x de 0 a 6.24
         //pitch eix y de -1.5 a 1.5
-        position: {  yaw: 0, pitch: 0.11 },
-        tooltip: 'A circle marker',
-        anchor: 'center center',
+        position: { yaw: 0, pitch: 0.11 },
+        tooltip: "A circle marker",
+        anchor: "center center",
       },
       {
-        id: 'circle2',
+        id: "circle2",
         circle: 20,
         position: { yaw: 6.24, pitch: -1.5 },
-        tooltip: 'A circle marker',
-        anchor: 'center center',
+        tooltip: "A circle marker",
+        anchor: "center center",
       },
       {
-        id: 'circle3',
+        id: "circle3",
         circle: 20,
         position: { textureX: 300, textureY: 1800 },
-        tooltip: 'A circle marker',
-        anchor: 'center center',
+        tooltip: "A circle marker",
+        anchor: "center center",
       },
     ];
 
@@ -70,23 +67,23 @@ export default {
       });
 
       // Esdeveniment per gestionar el canvi de panorames quan es fa clic a un marcador
-      console.log(viewer.getPlugin('markers'));
-       viewer.getPlugin(MarkersPlugin).addEventListener("select-marker", (e) => {
+      console.log(viewer.getPlugin("markers"));
+      viewer.getPlugin(MarkersPlugin).addEventListener("select-marker", (e) => {
         switch (e.marker.config.id) {
           case "circle":
-            viewer.setPanorama(baseUrl + 'tour/key-biscayne-1.jpg', {
+            viewer.setPanorama(baseUrl + "tour/key-biscayne-1.jpg", {
               caption: "Panorama 2",
             });
             // Actualitzar la llista de marcadors per al nou panorama
             viewer.getPlugin(MarkersPlugin).setMarkers([
               {
                 id: "circle5",
-                position:{ yaw: 0, pitch: 0 },
+                position: { yaw: 0, pitch: 0 },
                 image: img1,
                 width: 50,
                 height: 150,
-                style:{
-                  borderRadius: '10px'
+                style: {
+                  borderRadius: "10px",
                 },
                 anchor: "bottom center",
                 tooltip: "Click to open new panorama",
@@ -96,7 +93,7 @@ export default {
             break;
           // Afegir més casos per altres marcadors...
           case "circle5":
-            viewer.setPanorama( baseUrl + "sphere.jpg", {
+            viewer.setPanorama(baseUrl + "sphere.jpg", {
               caption: "Panorama 1",
             });
             // Actualitzar la llista de marcadors per al nou panorama
