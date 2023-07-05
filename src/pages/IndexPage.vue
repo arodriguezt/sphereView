@@ -1,14 +1,67 @@
 <template>
-  <div id="viewer"></div>
+  <div>
+    <div id="viewer"></div>
+    <q-dialog
+      v-model="showNewMarkerDialog"
+      style=""
+      persistent
+      full-width
+      class="quantityDialog"
+    >
+      <div class="divDialog">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6 nomProducteDiv">Nuevo marcador</div>
+          </q-card-section>
+
+          <q-card-section class="q-pt-none quantityPriceInputs">
+            <q-input
+              ref="inputQuantityRef"
+              v-model="idMarker"
+              type="text"
+              color="warning"
+              dense
+              autofocus
+            ></q-input>
+            <q-file
+              v-model="selectedImage"
+              label="Pick images"
+              filled
+              counter
+              style="max-width: 300px"
+              @input="onFileSelected"
+            />
+          </q-card-section>
+
+          <q-card-actions align="left" class="text-primary">
+            <q-btn
+              v-close-popup
+              flat
+              class="cardActionButtonCancel"
+              label="Cancelar"
+            ></q-btn>
+            <q-btn
+              v-close-popup
+              flat
+              class="cardActionButtonConfirm"
+              label="Aceptar"
+              @click="addMarker(idMarker, image)"
+            ></q-btn>
+          </q-card-actions>
+        </q-card>
+      </div>
+    </q-dialog>
+  </div>
 </template>
 
 <script>
 import { Viewer } from "@photo-sphere-viewer/core";
 import { MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
-import { onMounted } from "vue";
+import { onMounted, ref, reactive } from "vue";
 
 export default {
   name: "IndexPage",
+  //https://www.freepik.com/premium-photo/minsk-belarus-april-2019-full-seamless-hdri-panorama-360-angle-guestroom-with-sofa-tv-apartments-mansard-floor-vacation-house-equirectangular-spherical-projectionvr-content_28861885.htm#from_view=detail_alsolike
   setup() {
     const baseUrl = "https://photo-sphere-viewer-data.netlify.app/assets/";
     const img1 =
@@ -17,42 +70,79 @@ export default {
     let viewer; // Variable per guardar el viewer
     let markers = [
       {
-        id: "circle",
+        id: 'circle',
         circle: 20,
-        position: { yaw: 4.7, pitch: 0.5 },
-        tooltip: "A circle marker",
-        anchor: "center center",
+        position: {yaw: 4.7, pitch: 0.5},
+        tooltip: 'A circle marker',
+        anchor: 'center center',
+        style:{
+          backgroundColor:red
+        }
       },
       {
-        id: "circle1",
+        id: 'circle1',
         circle: 20,
         //yaw eix x de 0 a 6.24
         //pitch eix y de -1.5 a 1.5
-        position: { yaw: 0, pitch: 0.11 },
-        tooltip: "A circle marker",
-        anchor: "center center",
+        position: {  yaw: 0, pitch: 0.11 },
+        tooltip: 'A circle marker',
+        anchor: 'center center',
       },
       {
-        id: "circle2",
+        id: 'circle2',
         circle: 20,
         position: { yaw: 6.24, pitch: -1.5 },
-        tooltip: "A circle marker",
-        anchor: "center center",
+        tooltip: 'A circle marker',
+        anchor: 'center center',
       },
       {
-        id: "circle3",
+        id: 'circle3',
         circle: 20,
         position: { textureX: 300, textureY: 1800 },
-        tooltip: "A circle marker",
-        anchor: "center center",
+        tooltip: 'A circle marker',
+        anchor: 'center center',
       },
     ];
+
+    function getFilteredMarkers(markerId) {
+      return markers.filter((marker) => marker.id !== markerId);
+    }
+
+    function createMarker(id) {
+      return {
+        id: id,
+        position: { yaw: markerPosition.yaw, pitch: markerPosition.pitch },
+        image: markerImageURL.value,
+        size: {
+          width: 150,
+          height: 100,
+        },
+        anchor: "bottom center",
+        tooltip: "Generated pin on double click",
+        data: {
+          generated: true,
+        },
+        className: "imageMarker",
+      };
+    }
+
+
+    function addMarker(id) {
+      console.log(id);
+      viewer.getPlugin(MarkersPlugin).addMarker(createMarker(id));
+      markers.push(createMarker(id))
+      console.log(markers);
+    }
+
+    function onFileSelected(event) {
+      const file = event.target.files[0]
+      markerImageURL.value = URL.createObjectURL(file)
+    }
 
     onMounted(() => {
       viewer = new Viewer({
         container: "viewer",
         panorama: baseUrl + "sphere.jpg",
-        caption: "Parc national du Mercantour <b>&copy; Damien Sorel</b>",
         loadingImg: baseUrl + "loader.gif",
         touchmoveTwoFingers: true,
         mousewheelCtrlKey: true,
@@ -60,30 +150,30 @@ export default {
           [
             MarkersPlugin,
             {
-              markers: markers,
+              markers: getFilteredMarkers("circle4"),
             },
           ],
         ],
       });
 
       // Esdeveniment per gestionar el canvi de panorames quan es fa clic a un marcador
-      console.log(viewer.getPlugin("markers"));
-      viewer.getPlugin(MarkersPlugin).addEventListener("select-marker", (e) => {
+      console.log(viewer.getPlugin('markers'));
+       viewer.getPlugin(MarkersPlugin).addEventListener("select-marker", (e) => {
         switch (e.marker.config.id) {
           case "circle":
-            viewer.setPanorama(baseUrl + "tour/key-biscayne-1.jpg", {
+            viewer.setPanorama(baseUrl + 'tour/key-biscayne-1.jpg', {
               caption: "Panorama 2",
             });
             // Actualitzar la llista de marcadors per al nou panorama
             viewer.getPlugin(MarkersPlugin).setMarkers([
               {
                 id: "circle5",
-                position: { yaw: 0, pitch: 0 },
+                position:{ yaw: 0, pitch: 0 },
                 image: img1,
                 width: 50,
                 height: 150,
-                style: {
-                  borderRadius: "10px",
+                style:{
+                  borderRadius: '10px'
                 },
                 anchor: "bottom center",
                 tooltip: "Click to open new panorama",
@@ -93,7 +183,7 @@ export default {
             break;
           // Afegir més casos per altres marcadors...
           case "circle5":
-            viewer.setPanorama(baseUrl + "sphere.jpg", {
+            viewer.setPanorama( baseUrl + "sphere.jpg", {
               caption: "Panorama 1",
             });
             // Actualitzar la llista de marcadors per al nou panorama
@@ -104,7 +194,9 @@ export default {
       });
     });
 
-    return {};
+      addMarker,
+      onFileSelected,
+    };
   },
 };
 </script>
@@ -116,6 +208,40 @@ body,
   width: 100vw;
   height: 100vh;
   font-family: sans-serif;
+}
+
+.q-card {
+  height: 38%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+.quantityPriceInputs {
+  align-self: center;
+  width: 70%;
+}
+.cardActionButtonConfirm,
+.cardActionButtonCancel {
+  margin-left: 0px;
+  position: relative;
+  margin: auto;
+}
+
+.cardActionButtonCancel {
+  color: #98033f !important;
+}
+.cardActionButtonConfirm {
+  color: #268052 !important;
+}
+.priceSection {
+  display: flex;
+  justify-content: space-around;
+  font-size: 1rem;
+}
+.nomProducteDiv {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 /*S'han d'importar les clases externament*/
@@ -661,6 +787,13 @@ body,
 .psv-marker--has-tooltip,
 .psv-marker--has-content {
   cursor: pointer;
+}
+.imageMarker {
+  border-radius: 50%;
+  border: 3px solid black;
+  background-size: cover;
+  width: 150px;
+  height: 100px;
 }
 /*# sourceMappingURL=index.css.map */
 </style>
